@@ -67,31 +67,6 @@ static void concatenate() {
   push(OBJ_VAL(result));
 }
 
-static void duplicate() {
-  double b;
-  ObjString *a;
-
-  if (IS_STRING(peek(0)) && IS_NUMBER(peek(1))) {
-    a = AS_STRING(pop());
-    b = AS_NUMBER(pop());
-  } else {
-    b = AS_NUMBER(pop());
-    a = AS_STRING(pop());
-  }
-
-  int reps = (int)ceil(b);
-  int length = reps * a->length;
-  char *chars = ALLOCATE(char, length + 1);
-
-  for (int i = 0; i < reps; i++) {
-    memcpy(chars + i * a->length, a->chars, a->length);
-  }
-  chars[length] = '\0';
-
-  ObjString *result = takeString(chars, length);
-  push(OBJ_VAL(result));
-}
-
 static InterpretResult run() {
 #define READ_BYTE() (*vm.ip++)
 #define READ_CONSTANT() (vm.chunk->constants.values[READ_BYTE()])
@@ -163,21 +138,9 @@ static InterpretResult run() {
     case OP_SUBTRACT:
       BINARY_OP(NUMBER_VAL, -);
       break;
-    case OP_MULTIPLY: {
-      if ((IS_NUMBER(peek(0)) && IS_STRING(peek(1))) ||
-          (IS_STRING(peek(0)) && IS_NUMBER(peek(1)))) {
-        duplicate();
-      } else if (IS_NUMBER(peek(0)) && IS_NUMBER(peek(1))) {
-        double b = AS_NUMBER(pop());
-        double a = AS_NUMBER(pop());
-        push(NUMBER_VAL(a * b));
-      } else {
-        runtimeError(
-            "Operands must be two numbers or string multiplied by number");
-        return INTERPRET_RUNTIME_ERROR;
-      }
+    case OP_MULTIPLY:
+      BINARY_OP(NUMBER_VAL, *);
       break;
-    }
     case OP_DIVIDE:
       BINARY_OP(NUMBER_VAL, /);
       break;
