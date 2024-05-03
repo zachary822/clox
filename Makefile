@@ -1,5 +1,5 @@
 # Define compiler
-CC=clang
+CC=gcc
 
 # Define any compile-time flags
 CFLAGS=-Wall -g
